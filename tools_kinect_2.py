@@ -464,7 +464,7 @@ def initialise_device_with_calibration(depth_mode = K4A_DEPTH_MODE_NFOV_UNBINNED
     k4a_device_open(0, dev)
     k4a_device_start_cameras(dev, ctypes.byref(config))
     calibration = k4a_calibration_t()
-    print(f"Return value: {k4a_device_get_calibration(dev, depth_mode, colour_resolution, ctypes.byref(calibration))}")
+    k4a_device_get_calibration(dev, depth_mode, colour_resolution, ctypes.byref(calibration))
     return dev, calibration
 
 def get_image(device):
@@ -478,8 +478,8 @@ def transform_depth_image_to_colour(calibration, depth_image):
     transformation = k4a_transformation_create(ctypes.byref(calibration))
     transformed_image = k4a_image_t()
     k4a_image_create(K4A_IMAGE_FORMAT_DEPTH16, 
-        calibration.contents.color_camera_calibration.contents.resolution_width, 
-        calibration.contents.color_camera_calibration.contents.resolution_height, 
+        calibration.color_camera_calibration.resolution_width, 
+        calibration.color_camera_calibration.resolution_height, 
         0,
         ctypes.byref(transformed_image))
     k4a_transformation_depth_image_to_color_camera(transformation, depth_image, transformed_image)
