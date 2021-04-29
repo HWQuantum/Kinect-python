@@ -484,7 +484,7 @@ def transform_depth_image_to_colour(calibration, depth_image):
         ctypes.byref(transformed_image))
     k4a_transformation_depth_image_to_color_camera(transformation, depth_image, transformed_image)
     w, h = k4a_image_get_width_pixels(transformed_image), k4a_image_get_height_pixels(transformed_image)
-    depth_array = np.ctypeslib.as_array(k4a_image_get_buffer(transformed_image), shape=(2*h*w, )).view(np.uint16).reshape((h, w))    
+    depth_array = np.ctypeslib.as_array(k4a_image_get_buffer(transformed_image), shape=(2*h*w, )).view(np.uint16).reshape((h, w)).copy() 
     k4a_transformation_destroy(transformation)
     k4a_image_release(transformed_image)
 
