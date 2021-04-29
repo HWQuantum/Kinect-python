@@ -306,6 +306,7 @@ K4A_DEVICE_CONFIG_INIT_DISABLE_ALL.subordinate_delay_off_master_usec = 0
 K4A_DEVICE_CONFIG_INIT_DISABLE_ALL.disable_streaming_indicator = False
 
 # Functions
+
 #K4A_EXPORT k4a_result_t k4a_device_open(uint32_t index, k4a_device_t *device_handle);
 k4a_device_open = _k4a.k4a_device_open
 k4a_device_open.restype=ctypes.c_int

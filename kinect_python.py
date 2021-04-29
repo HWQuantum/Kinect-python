@@ -31,6 +31,7 @@ for index_image in range(N):
     colour = im.get_colour_array()
     color_img_full[:,:,:,index_image] = colour
     # print(im.get_colour_array().shape)
+    
 name = 'first_test.mat'
 dictio = {}
 dictio['depth'] = depth_img_full
