@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import tools_kinect
 import time
 import scipy.io as sio
-d = tools_kinect.initialise_device()
+d, calibration = tools_kinect.initialise_device_with_calibration()
 im = tools_kinect.get_image(d)
 
 # fig, axs = plt.subplots(1, 2)
@@ -23,14 +23,20 @@ depth_img_full = np.empty((474,430,N))
 color_img_full = np.empty((720,1280,4,N))
 for index_image in range(N):
     im= tools_kinect.get_image(d)
+    transformed_depth_array = tools_kinect.transform_depth_image_to_colour(calibration, im.depth_image)
     # print(im.get_depth_array().shape)
     depth = im.get_depth_array()
+    fig, axs = plt.subplots(1, 2)
+    axs[0].imshow(transformed_depth_array)
+    axs[1].imshow(depth)
+    plt.show()
     depth_cropped = depth[51:525,105:535]
     depth_img_full[:,:,index_image] = depth_cropped
     # print(depth_cropped.shape)
     colour = im.get_colour_array()
     color_img_full[:,:,:,index_image] = colour
     # print(im.get_colour_array().shape)
+    
 name = 'first_test.mat'
 dictio = {}
 dictio['depth'] = depth_img_full

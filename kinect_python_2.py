@@ -26,9 +26,11 @@ for index_image in range(N):
     transformed_depth_array = tools_kinect.transform_depth_image_to_colour(calibration, im.depth_image)
     # print(im.get_depth_array().shape)
     depth = im.get_depth_array()
-    fig, axs = plt.subplots(1, 2)
+    colour = im.get_colour_array()
+    #fig, axs = plt.subplots(1, 3)
     axs[0].imshow(transformed_depth_array)
     axs[1].imshow(depth)
+    axs[2].imshow(colour)
     plt.show()
     depth_cropped = depth[51:525,105:535]
     depth_img_full[:,:,index_image] = depth_cropped

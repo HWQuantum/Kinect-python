@@ -306,6 +306,7 @@ K4A_DEVICE_CONFIG_INIT_DISABLE_ALL.subordinate_delay_off_master_usec = 0
 K4A_DEVICE_CONFIG_INIT_DISABLE_ALL.disable_streaming_indicator = False
 
 # Functions
+
 #K4A_EXPORT k4a_result_t k4a_device_open(uint32_t index, k4a_device_t *device_handle);
 k4a_device_open = _k4a.k4a_device_open
 k4a_device_open.restype=ctypes.c_int
@@ -359,6 +360,32 @@ k4a_image_get_buffer = _k4a.k4a_image_get_buffer
 k4a_image_get_buffer.restype = ctypes.POINTER(ctypes.c_uint8)
 k4a_image_get_buffer.argtypes = (k4a_image_t,)
 
+# k4a_transformation_t k4a_transformation_create	
+k4a_transformation_create = _k4a.k4a_transformation_create
+k4a_transformation_create.restype = k4a_transformation_t
+k4a_transformation_create.argtypes = (ctypes.POINTER(k4a_calibration_t),)
+
+#void k4a_transformation_destroy	(	k4a_transformation_t 	transformation_handle	)	
+k4a_transformation_destroy = _k4a.k4a_transformation_destroy
+k4a_transformation_destroy.restype = None
+k4a_transformation_destroy.argtypes = (k4a_transformation_t,)
+
+"""
+#k4a_result_t k4a_transformation_depth_image_to_color_camera	(	k4a_transformation_t 	transformation_handle,
+#const k4a_image_t 	depth_image,
+#k4a_image_t 	transformed_depth_image 
+"""
+k4a_transformation_depth_image_to_color_camera = _k4a.k4a_transformation_depth_image_to_color_camera
+k4a_transformation_depth_image_to_color_camera.restype = ctypes.c_int
+k4a_transformation_depth_image_to_color_camera.argtypes = (k4a_transformation_t, k4a_image_t, k4a_image_t)
+
+"""
+k4a_result_t k4a_image_create	(	k4a_image_format_t 	format, int 	width_pixels, int 	height_pixels,
+int 	stride_bytes, k4a_image_t * image_handle 3)	
+"""
+k4a_image_create = _k4a.k4a_image_create
+k4a_image_create.restype = ctypes.c_int
+k4a_image_create.argtypes = (ctypes.c_int, ctypes.c_int,ctypes.c_int,ctypes.c_int,ctypes.POINTER(k4a_image_t))
 
 #K4A_EXPORT void k4a_capture_release(k4a_capture_t capture_handle);
 k4a_capture_release = _k4a.k4a_capture_release
@@ -420,8 +447,45 @@ def initialise_device():
     k4a_device_start_cameras(dev, ctypes.byref(config))
     return dev
 
+def initialise_device_with_calibration(depth_mode = K4A_DEPTH_MODE_NFOV_UNBINNED, colour_resolution=K4A_COLOR_RESOLUTION_720P):
+    dev = k4a_device_t()
+
+    config = K4A_DEVICE_CONFIG_INIT_DISABLE_ALL
+    config.color_format = K4A_IMAGE_FORMAT_COLOR_BGRA32
+    config.color_resolution = colour_resolution
+    config.depth_mode = depth_mode
+    config.camera_fps = K4A_FRAMES_PER_SECOND_30
+    config.synchronized_images_only = True
+    config.depth_delay_off_color_usec = 0
+    config.wired_sync_mode = K4A_WIRED_SYNC_MODE_STANDALONE
+    config.subordinate_delay_off_master_usec = 0
+    config.disable_streaming_indicator = False
+
+    k4a_device_open(0, dev)
+    k4a_device_start_cameras(dev, ctypes.byref(config))
+    calibration = k4a_calibration_t()
+    k4a_device_get_calibration(dev, depth_mode, colour_resolution, ctypes.byref(calibration))
+    return dev, calibration
+
 def get_image(device):
 
     cap = k4a_capture_t()
     k4a_device_get_capture(device, ctypes.byref(cap), 1000)
     return CaptureData(cap)
+
+def transform_depth_image_to_colour(calibration, depth_image):
+
+    transformation = k4a_transformation_create(ctypes.byref(calibration))
+    transformed_image = k4a_image_t()
+    k4a_image_create(K4A_IMAGE_FORMAT_DEPTH16, 
+        calibration.color_camera_calibration.resolution_width, 
+        calibration.color_camera_calibration.resolution_height, 
+        0,
+        ctypes.byref(transformed_image))
+    k4a_transformation_depth_image_to_color_camera(transformation, depth_image, transformed_image)
+    w, h = k4a_image_get_width_pixels(transformed_image), k4a_image_get_height_pixels(transformed_image)
+    depth_array = np.ctypeslib.as_array(k4a_image_get_buffer(transformed_image), shape=(2*h*w, )).view(np.uint16).reshape((h, w)).copy() 
+    k4a_transformation_destroy(transformation)
+    k4a_image_release(transformed_image)
+
+    return depth_array
