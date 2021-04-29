@@ -464,7 +464,7 @@ def initialise_device_with_calibration(depth_mode = K4A_DEPTH_MODE_NFOV_UNBINNED
     k4a_device_open(0, dev)
     k4a_device_start_cameras(dev, ctypes.byref(config))
     calibration = k4a_calibration_t()
-    k4a_device_get_calibration(dev, depth_mode, colour_resolution, ctypes.byref(calibration))
+    print(f"Return value: {k4a_device_get_calibration(dev, depth_mode, colour_resolution, ctypes.byref(calibration)}")
     return dev, calibration
 
 def get_image(device):
