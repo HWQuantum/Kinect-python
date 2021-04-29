@@ -4,7 +4,7 @@ import sys
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import tools_kinect_2 as tools_kinect
+import tools_kinect
 import time
 import scipy.io as sio
 d, calibration = tools_kinect.initialise_device_with_calibration()
