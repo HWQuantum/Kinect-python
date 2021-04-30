@@ -6,6 +6,7 @@ import numpy as np
 
 _k4a = ctypes.cdll.LoadLibrary(os.path.join(os.path.dirname(__file__), "k4a"))
 
+
 # K4A_DECLARE_HANDLE(k4a_device_t);
 class _handle_k4a_device_t(ctypes.Structure):
      _fields_= [
