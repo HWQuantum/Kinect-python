@@ -7,39 +7,38 @@ import matplotlib.pyplot as plt
 import tools_kinect_2 as tools_kinect
 import time
 import scipy.io as sio
+
 d, calibration = tools_kinect.initialise_device_with_calibration()
 im = tools_kinect.get_image(d)
 
-# fig, axs = plt.subplots(1, 2)
-# depth = im.get_depth_array()
-# depth_cropped = depth[51:525,105:535]
-# axs[0].imshow(depth_cropped)
-# axs[1].imshow(im.get_colour_array())
-# plt.show()
+ 
 
-N = 10
+# Create empty array for depth and RGB 
+# -> I am not sure of the sizes of the images, Run first without saving to know the shapes. 
+s_x_depth = 474
+s_y_depth = 430
+s_x_rgb = 720
+s_y_rgb = 1280
+depth_img_full = np.empty((s_x_depth,s_y_depth,N)) # Depth  
+color_img_full = np.empty((s_x_rgb,s_y_rgb,4,N)) #RGB  
+# depth_img_full_transformed = np.empty((720,1280,N)) # Depth compensated for deformation of the lens. This takes time and is not always necessary. 
+#  I think you need GPU for it. I suggest to try first without. 
 
-depth_img_full = np.empty((474,430,N))
-color_img_full = np.empty((720,1280,4,N))
+
+N = 10 #number of frames to take/save
 for index_image in range(N):
     im= tools_kinect.get_image(d)
-    transformed_depth_array = tools_kinect.transform_depth_image_to_colour(calibration, im.depth_image)
-    # print(im.get_depth_array().shape)
+    # get depth and RGB image
     depth = im.get_depth_array()
+    print(depth.shape)
     colour = im.get_colour_array()
-    #fig, axs = plt.subplots(1, 3)
-    axs[0].imshow(transformed_depth_array)
-    axs[1].imshow(depth)
-    axs[2].imshow(colour)
-    plt.show()
-    depth_cropped = depth[51:525,105:535]
-    depth_img_full[:,:,index_image] = depth_cropped
-    # print(depth_cropped.shape)
-    colour = im.get_colour_array()
+    # transformed_depth_array = tools_kinect.transform_depth_image_to_colour(calibration, im.depth_image)
+
+    depth_img_full[:,:,index_image] = depth
     color_img_full[:,:,:,index_image] = colour
-    # print(im.get_colour_array().shape)
+
     
-name = 'first_test.mat'
+name = 'array.mat'
 dictio = {}
 dictio['depth'] = depth_img_full
 dictio['colour'] = color_img_full
